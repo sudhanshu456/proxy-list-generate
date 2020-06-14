@@ -125,7 +125,7 @@ def check_create_file(proxyList):
 def write_file(working):
     date=(datetime.now()+timedelta(30)).strftime("%d_%m_%Y")
     filename='./output/file_{date}.txt'.format(date=date)
-    file=open(filename,'w')
+    file=open(filename,'a')
     for i in working:
         file.writelines(i+"\n")
 
@@ -138,12 +138,9 @@ def main():
         future2=executor.submit(scrapper1,("Message"))
         future3=executor.submit(scrapper2,("anythinh"))
         future4=executor.submit(scrapper3,("anythinh"))
-        x1=future1.result()
-        x2=future2.result()
-        x3=future3.result()
-        x4=future4.result()
-        final=x1+x2+x3+x4
-        final=set(final)
-        return list(final)
+        write_file(future1.result())
+        write_file(future2.result())
+        write_file(future3.result())
+        write_file(future4.result())
 if __name__ == '__main__':
-    write_file(main())
+    main()
