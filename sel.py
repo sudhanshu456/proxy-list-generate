@@ -1,7 +1,7 @@
 import time
 import json
 import os
-from threading import thread
+from threading import Thread
 import concurrent.futures
 from datetime import datetime,timedelta
 from selenium.webdriver.common.by import By
@@ -19,7 +19,7 @@ options.add_argument("disable-infobars")
 options.add_argument('--disable-dev-shm-usage')
 
 
-def scrapper1():
+def scrapper1(message):
     #options.add_argument("user-data-dir=C:\\Users\\ASUS\\AppData\\Local\\Google\\Chrome\\User Data\\")
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)
     driver.get("http://spys.one/en/anonymous-proxy-list/")
@@ -37,9 +37,10 @@ def scrapper1():
         proxlis.remove('Proxy address:port')
     except:
         pass
-    return list(proxlis),"spys"
+    
+    return check_create_file(list(proxlis))
 
-def scrapper2():
+def scrapper2(message):
     proxlis=set()
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)
     for i in range(1,6):
@@ -59,9 +60,9 @@ def scrapper2():
         for k in z.split('\n'):
             proxlis.add(k)
     driver.quit()
-    return list(proxlis),"free_proxy.cz"
+    return check_create_file(list(proxlis))
 
-def scrapper3():
+def scrapper3(message):
     proxlis=set()
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)
     driver.get("https://free-proxy-list.net/")
@@ -75,26 +76,21 @@ def scrapper3():
                 
         driver.find_element_by_xpath('/html/body/section[1]/div/div[2]/div/div[3]/div[2]/div/ul/li[10]/a').click()
     driver.quit()
-    return list(proxlis),"free_prozy_list.net"
+    return check_create_file(list(proxlis))
 
-def scrapper4():
+def scrapper4(message):
     proxlis=set()
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)    
-    driver.get('http://nntime.com/')
-    driver.find_element_by_xpath('//*[@id="formname"]/div[1]/a[1]').click()
-    e=driver.find_element_by_xpath('//*[@id="form1"]/div[1]/textarea')
-    for i in e.get_attribute("value").split("\n"):
-        proxlis.add(i)
-
-    for i in range(2,10):
-        driver.get("http://nntime.com/proxy-list-0{}.htm".format(i))
-        driver.find_element_by_xpath('//*[@id="formname"]/div[1]/a[1]').click()
-        e=driver.find_element_by_xpath('//*[@id="form1"]/div[1]/textarea')
-        for j in e.get_attribute("value").split("\n"):
-            proxlis.add(j)
+    for k in range(1,10):
+        driver.get("http://nntime.com/proxy-list-0{}.htm".format(k))
+        e=driver.find_element_by_id('proxylist')
+        t=[[col.text for col in i.find_elements_by_tag_name('td') if len(col.text)>5 ] for i in e.find_elements_by_tag_name('tr')]
+        for j in t:
+            if len(j)>3:
+                proxlis.add(j[0])
     driver.quit()
     # read the list of proxy IPs in proxyList
-    return list(proxlis),"nntime.com"
+    return check_create_file(list(proxlis))
 
 def is_bad_proxy(pip):
     import urllib.request , socket
@@ -119,26 +115,35 @@ def check_create_file(proxyList):
     working=[]
     for item in proxyList:
         if is_bad_proxy(item):
-            print ("Bad Proxy", item)
-            
-            
+            print ("Bad Proxy", item)    
         else:
             print (item, "is working")
             working.append(item)
     return working
     
 
-def write_file(url,working):
+def write_file(working):
     date=(datetime.now()+timedelta(30)).strftime("%d_%m_%Y")
-    filename='./output/file{url}_{date}.txt'.format(url=url,date=date)
+    filename='./output/file_{date}.txt'.format(date=date)
     file=open(filename,'w')
     for i in working:
         file.writelines(i+"\n")
 
     file.close()
 
+
+def main():
+    with concurrent.futures.ThreadPoolExecutor(max_workers = 5) as executor:
+        future1 = executor.submit(scrapper4,("Message"))
+        future2=executor.submit(scrapper1,("Message"))
+        future3=executor.submit(scrapper2,("anythinh"))
+        future4=executor.submit(scrapper3,("anythinh"))
+        x1=future1.result()
+        x2=future2.result()
+        x3=future3.result()
+        x4=future4.result()
+        final=x1+x2+x3+x4
+        final=set(final)
+        return list(final)
 if __name__ == '__main__':
-    x,y=scrapper1()
-    x1,y1=scrapper2()
-    x2,y2=scrapper3()
-    x3,y3=scrapper4()
+    write_file(main())
