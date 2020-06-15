@@ -92,6 +92,68 @@ def scrapper4(message):
     # read the list of proxy IPs in proxyList
     return check_create_file(list(proxlis))
 
+def scrapper5(message):
+    proxlis=set()
+    driver = webdriver.Chrome(executable_path=chromedriver,options =options)
+    driver.get('https://www.proxynova.com/proxy-server-list/')
+    e=driver.find_element_by_id('tbl_proxy_list')
+    table=[[col.text for col in i.find_elements_by_tag_name('td')] for i in e.find_elements_by_tag_name('tr')]
+    driver.quit()
+    for i in table:
+	    if len(i)>5:
+		    prox=i[0]+":"+i[1]
+		    proxlis.add(prox)
+
+    return check_create_file(list(proxlis))
+
+def scrapper6(message):
+    driver = webdriver.Chrome(executable_path=chromedriver,options =options)
+    driver.get('https://proxyscrape.com/free-proxy-list')
+    WebDriverWait(driver,20).until(EC.presence_of_element_located((By.ID,"proxytable")))
+    url=str(driver.find_element_by_id('downloadhttp').get_property('href'))
+    driver.quit()
+    import requests
+    r=requests.get('https://api.proxyscrape.com/?request=getproxies&proxytype=http&timeout=10000&country=all&ssl=all&anonymity=all')
+    proxlis=r.content.decode("utf-8").split("\r\n")
+
+    return check_create_file(list(proxlis))
+
+def scrapper7(message):
+    driver = webdriver.Chrome(executable_path=chromedriver,options =options)
+    table=[]
+    proxlis=set()
+    for k in range(1,8):
+
+        driver.get('https://premproxy.com/list/0{}.htm'.format(k))   #1-7
+        e=driver.find_element_by_id('proxylist')
+        temp=[[col.text for col in i.find_elements_by_tag_name('td')] for i in e.find_elements_by_tag_name('tr')]
+        table+=temp
+    driver.quit()
+    for i in table:
+	    if len(i)>4:
+		    proxlis.add(i[0])    
+    return check_create_file(list(proxlis))
+
+def scrapper8(message):
+    driver = webdriver.Chrome(executable_path=chromedriver,options =options)
+    table=[]
+    proxlis=set()
+
+    for k in range(1,6):
+        
+        driver.get('https://free-proxy-list.com/?search=1&page={}&port=&type%5B%5D=http&type%5B%5D=https&up_time=0'.format(k))  #  1-5
+        e=driver.find_elements_by_xpath('/html/body/div[2]/div[1]/div/div/div[3]/table/tbody')[0]
+        temp=[[col.text for col in i.find_elements_by_tag_name('td')] for i in e.find_elements_by_tag_name('tr')]
+        table+=temp
+    driver.quit()
+    for i in table:
+        if len(i)>4:
+            temp=i[0]+":"+i[2]
+            proxlis.add(temp)
+
+            
+    return check_create_file(list(proxlis))
+
 def is_bad_proxy(pip):
     import urllib.request , socket
     socket.setdefaulttimeout(180)
@@ -122,25 +184,60 @@ def check_create_file(proxyList):
     return working
     
 
-def write_file(working):
+def write_file(working,name):
     date=(datetime.now()+timedelta(30)).strftime("%d_%m_%Y")
-    filename='./output/file_{date}.txt'.format(date=date)
+    filename='./output/file_{name}_{date}.txt'.format(date=date,name=name)
     file=open(filename,'a')
     for i in working:
         file.writelines(i+"\n")
 
     file.close()
 
+def final_file():
+    filename=['./output/file_s{name}_{date}.txt'.format(date=date,name=i) for i in range(1,9)]
+    date=(datetime.now()+timedelta(30)).strftime("%d_%m_%Y")
+    final_file='./output/file{name}_{date}.txt'.format(date=date,name="_final")
+    file=open(final_file,'a')
+
+    for k in filename:
+        temp=open(filename,'r')
+        while True:
+            line = temp.readline()
+            if not line:
+                temp.close()
+                break
+            file.writelines(line)
+    file.close()
+    print("file final is created\n")
+    return filname
+
+def remove_temp(name):
+    for i in name:
+        os.remove("i")
+        print("File Removed!",i)
+    print("execution completed")
+    return "ok"
 
 def main():
-    with concurrent.futures.ThreadPoolExecutor(max_workers = 5) as executor:
-        future1 = executor.submit(scrapper4,("Message"))
-        future2=executor.submit(scrapper1,("Message"))
-        future3=executor.submit(scrapper2,("anythinh"))
-        future4=executor.submit(scrapper3,("anythinh"))
-        write_file(future1.result())
-        write_file(future2.result())
-        write_file(future3.result())
-        write_file(future4.result())
+    with concurrent.futures.ThreadPoolExecutor(max_workers = 8) as executor:
+        future1=executor.submit(scrapper1,("scrapper1"))
+        future2=executor.submit(scrapper2,("scrapper2"))
+        future3=executor.submit(scrapper3,("scrapper"))
+        future4=executor.submit(scrapper4,("anythinh"))
+        future5=executor.submit(scrapper5,("scrapper1"))
+        future6=executor.submit(scrapper6,("scrapper2"))
+        future7=executor.submit(scrapper7,("scrapper"))
+        future8=executor.submit(scrapper8,("anythinh"))
+        write_file(future1.result(),"s1")
+        write_file(future2.result(),"s2")
+        write_file(future3.result(),"s3")
+        write_file(future4.result(),"s4")
+        write_file(future5.result(),"s5")
+        write_file(future6.result(),"s6")
+        write_file(future7.result(),"s7")
+        write_file(future8.result(),"s8")
+        names=final_file()
+        remove_temp(names)
+
 if __name__ == '__main__':
     main()
