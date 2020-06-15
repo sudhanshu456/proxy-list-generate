@@ -5,7 +5,10 @@ retrieve proxy from websites:
 - http://free-proxy.cz/
 - https://free-proxy-list.net/
 - http://nntime.com/
-
+- https://www.proxynova.com
+- https://proxyscrape.com/
+- https://premproxy.com/
+- https://free-proxy-list.com/
 
 To use this script 
 
@@ -17,3 +20,6 @@ pip install selenium
 ```
 - then run the script output will be inside the folder "Output"
 - this script uses Threading for faster processing. :rocket:
+
+
+### Note: All Proxy are google verified 
