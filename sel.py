@@ -38,7 +38,7 @@ def scrapper1(message):
     except:
         pass
     
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),"spys.one")
 
 def scrapper2(message):
     proxlis=set()
@@ -60,7 +60,7 @@ def scrapper2(message):
         for k in z.split('\n'):
             proxlis.add(k)
     driver.quit()
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),'free-proxy.cz')
 
 def scrapper3(message):
     proxlis=set()
@@ -76,7 +76,7 @@ def scrapper3(message):
                 
         driver.find_element_by_xpath('/html/body/section[1]/div/div[2]/div/div[3]/div[2]/div/ul/li[10]/a').click()
     driver.quit()
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),'free-proxy-list.net')
 
 def scrapper4(message):
     proxlis=set()
@@ -90,7 +90,7 @@ def scrapper4(message):
                 proxlis.add(j[0])
     driver.quit()
     # read the list of proxy IPs in proxyList
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),'nntime.com')
 
 def scrapper5(message):
     proxlis=set()
@@ -104,7 +104,7 @@ def scrapper5(message):
 		    prox=i[0]+":"+i[1]
 		    proxlis.add(prox)
 
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),"www.proxynova.com")
 
 def scrapper6(message):
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)
@@ -116,7 +116,7 @@ def scrapper6(message):
     r=requests.get('https://api.proxyscrape.com/?request=getproxies&proxytype=http&timeout=10000&country=all&ssl=all&anonymity=all')
     proxlis=r.content.decode("utf-8").split("\r\n")
 
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),"proxyscrape.com")
 
 def scrapper7(message):
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)
@@ -132,7 +132,7 @@ def scrapper7(message):
     for i in table:
 	    if len(i)>4:
 		    proxlis.add(i[0])    
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),"Premproxy")
 
 def scrapper8(message):
     driver = webdriver.Chrome(executable_path=chromedriver,options =options)
@@ -152,9 +152,10 @@ def scrapper8(message):
             proxlis.add(temp)
 
             
-    return check_create_file(list(proxlis))
+    return check_create_file(list(proxlis),"free-proxy-list.com")
 
-def is_bad_proxy(pip):
+    
+def is_bad_proxy(pip,website):
     import urllib.request , socket
     socket.setdefaulttimeout(180)
     try:        
@@ -162,22 +163,22 @@ def is_bad_proxy(pip):
         opener = urllib.request.build_opener(proxy_handler)
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)        
-        sock=urllib.request.urlopen('http://www.google.com', timeout=4)  # change the url address here
+        sock=urllib.request.urlopen('http://www.google.com', timeout=6)  # change the url address here
         #sock=urllib.urlopen(req)
     except urllib.error.HTTPError as e:        
         print('Error code: ', e.code)
         return e.code
     except Exception as detail:
 
-        print( "ERROR:", detail)
+        print( "ERROR:", detail,website)
         return 1
     return 0
 
-def check_create_file(proxyList):
+def check_create_file(proxyList,website):
     working=[]
     for item in proxyList:
-        if is_bad_proxy(item):
-            print ("Bad Proxy", item)    
+        if is_bad_proxy(item,website):
+            print ("Bad Proxy"+ ":"+ item + str(website))    
         else:
             print (item, "is working")
             working.append(item)
@@ -220,6 +221,7 @@ def remove_temp(name):
 
 def main():
     with concurrent.futures.ThreadPoolExecutor(max_workers = 8) as executor:
+        
         future1=executor.submit(scrapper1,("scrapper1"))
         future2=executor.submit(scrapper2,("scrapper2"))
         future3=executor.submit(scrapper3,("scrapper"))
