@@ -139,9 +139,9 @@ def scrapper8(message):
     table=[]
     proxlis=set()
 
-    for k in range(1,6):
+    for k in range(1,27):
         
-        driver.get('https://free-proxy-list.com/?search=1&page={}&port=&type%5B%5D=http&type%5B%5D=https&up_time=0'.format(k))  #  1-5
+        driver.get('https://free-proxy-list.com/?search=1&page={}&port=&type%5B%5D=http&type%5B%5D=https&up_time=0&search=Search'.format(k))  #  1-5
         e=driver.find_elements_by_xpath('/html/body/div[2]/div[1]/div/div/div[3]/table/tbody')[0]
         temp=[[col.text for col in i.find_elements_by_tag_name('td')] for i in e.find_elements_by_tag_name('tr')]
         table+=temp
@@ -154,7 +154,7 @@ def scrapper8(message):
             
     return check_create_file(list(proxlis),"free-proxy-list.com")
 
-    
+
 def is_bad_proxy(pip,website):
     import urllib.request , socket
     socket.setdefaulttimeout(180)
